@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import DealerForm from "@/components/dealers/DealerForm";
+import DealersTable from "@/components/dealers/DealersTable";
+
 export default function DealersPage() {
   const [dealers, setDealers] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -21,14 +24,18 @@ export default function DealersPage() {
     setDealers(data);
   }, []);
 
-  // Save to storage helper
+  // Save helper
   const saveToStorage = (updated) => {
     localStorage.setItem("dealers", JSON.stringify(updated));
     setDealers(updated);
   };
 
+  // Input change
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   // DELETE
@@ -37,13 +44,13 @@ export default function DealersPage() {
     saveToStorage(filtered);
   };
 
-  // EDIT (load data into form)
+  // EDIT
   const handleEdit = (dealer) => {
     setEditingId(dealer.id);
     setForm(dealer);
   };
 
-  // UPDATE SAVE
+  // UPDATE
   const handleUpdate = () => {
     const updated = dealers.map((d) =>
       d.id === editingId ? { ...form, id: editingId } : d
@@ -52,6 +59,22 @@ export default function DealersPage() {
     saveToStorage(updated);
     setEditingId(null);
 
+    resetForm();
+  };
+
+  // ADD
+  const handleAdd = () => {
+    const newDealer = {
+      ...form,
+      id: Date.now(),
+    };
+
+    saveToStorage([...dealers, newDealer]);
+    resetForm();
+  };
+
+  // RESET FORM
+  const resetForm = () => {
     setForm({
       dealerName: "",
       contactNumber: "",
@@ -63,145 +86,31 @@ export default function DealersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] p-6">
+    <div className="p-6 space-y-6">
 
       {/* HEADER */}
-      <h1 className="text-3xl font-bold mb-6">Dealers Management</h1>
-
-      {/* FORM */}
-      <div className="bg-white p-5 rounded-xl shadow mb-6 grid grid-cols-2 gap-4">
-
-        <input
-          name="dealerName"
-          placeholder="Dealer Name"
-          value={form.dealerName}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="contactNumber"
-          placeholder="Contact Number"
-          value={form.contactNumber}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="address"
-          placeholder="Address"
-          value={form.address}
-          onChange={handleChange}
-          className="border p-2 rounded col-span-2"
-        />
-
-        <input
-          name="cnicNo"
-          placeholder="CNIC"
-          value={form.cnicNo}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="ntnNo"
-          placeholder="NTN"
-          value={form.ntnNo}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="areaCode"
-          placeholder="Area Code"
-          value={form.areaCode}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-
-        {editingId ? (
-          <button
-            onClick={handleUpdate}
-            className="col-span-2 bg-green-600 text-white p-2 rounded"
-          >
-            Update Dealer
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              const newDealer = {
-                ...form,
-                id: Date.now(),
-              };
-
-              const updated = [...dealers, newDealer];
-              saveToStorage(updated);
-
-              setForm({
-                dealerName: "",
-                contactNumber: "",
-                address: "",
-                cnicNo: "",
-                ntnNo: "",
-                areaCode: "",
-              });
-            }}
-            className="col-span-2 bg-blue-600 text-white p-2 rounded"
-          >
-            Save Dealer
-          </button>
-        )}
+      <div>
+        <h1 className="text-3xl font-bold">Dealers Management</h1>
+        <p className="text-gray-500 mt-1">
+          Add, update, and manage cement dealers
+        </p>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full min-w-[800px]">
+      {/* FORM COMPONENT */}
+      <DealerForm
+        form={form}
+        editingId={editingId}
+        onChange={handleChange}
+        onAdd={handleAdd}
+        onUpdate={handleUpdate}
+      />
 
-          <thead className="bg-gray-100 text-left">
-            <tr>
-              <th className="p-3 border">Name</th>
-              <th className="p-3 border">Contact</th>
-              <th className="p-3 border">Address</th>
-              <th className="p-3 border">CNIC</th>
-              <th className="p-3 border">NTN</th>
-              <th className="p-3 border">Area</th>
-              <th className="p-3 border">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {dealers.map((d) => (
-              <tr key={d.id} className="hover:bg-gray-50">
-
-                <td className="p-2 border">{d.dealerName}</td>
-                <td className="p-2 border">{d.contactNumber}</td>
-                <td className="p-2 border">{d.address}</td>
-                <td className="p-2 border">{d.cnicNo}</td>
-                <td className="p-2 border">{d.ntnNo}</td>
-                <td className="p-2 border">{d.areaCode}</td>
-
-                <td className="p-2 border flex gap-2">
-                  <button
-                    onClick={() => handleEdit(d)}
-                    className="bg-yellow-500 px-3 py-1 rounded text-white"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(d.id)}
-                    className="bg-red-600 px-3 py-1 rounded text-white"
-                  >
-                    Delete
-                  </button>
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
-      </div>
+      {/* TABLE COMPONENT */}
+      <DealersTable
+        dealers={dealers}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
     </div>
   );

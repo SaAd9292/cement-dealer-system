@@ -2,238 +2,227 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  getCementEntries,
+  deleteCementEntry,
+  updateCementEntry,
+} from "@/lib/storage/cementStorage";
+
 export default function CementEntriesPage() {
+
   const [entries, setEntries] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
-  // LOAD DATA
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("cementEntries")) || [];
-    setEntries(data);
+    setEntries(getCementEntries());
   }, []);
 
   // DELETE
   const handleDelete = (id) => {
-    const updated = entries.filter((item) => item.id !== id);
+    const updated = deleteCementEntry(id);
     setEntries(updated);
-    localStorage.setItem("cementEntries", JSON.stringify(updated));
   };
 
   // START EDIT
-  const handleEdit = (item) => {
+  const startEdit = (item) => {
     setEditingId(item.id);
     setEditForm(item);
   };
 
-  // INPUT CHANGE
+  // CHANGE INPUT
   const handleChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    setEditForm({
+      ...editForm,
+      [e.target.name]: e.target.value,
+    });
   };
 
   // SAVE EDIT
-  const handleSave = () => {
-    const updated = entries.map((item) =>
-      item.id === editingId ? editForm : item
-    );
-
+  const saveEdit = () => {
+    const updated = updateCementEntry(editForm);
     setEntries(updated);
-    localStorage.setItem("cementEntries", JSON.stringify(updated));
-
     setEditingId(null);
-    setEditForm({});
   };
 
+  // RENDER CELL
+  const render = (item, key) =>
+    editingId === item.id ? (
+      <input
+        name={key}
+        value={editForm[key] || ""}
+        onChange={handleChange}
+        className="border p-2 rounded-lg w-full"
+      />
+    ) : (
+      item[key]
+    );
+
   return (
-    <div className="min-h-screen bg-[#F5F7FB] p-6">
+    <div className="p-6 bg-[#F5F7FB] min-h-screen">
 
       {/* HEADER */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[#0F172A]">
-          Cement Entries Records
+          Cement Entries
         </h1>
         <p className="text-gray-500 mt-1">
-          All saved cement form data (offline system)
+          Manage all shipment, dealer and transport records
         </p>
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
+      <div className="overflow-x-auto bg-white rounded-2xl shadow">
 
-        {entries.length === 0 ? (
-          <div className="p-6 text-gray-500">
-            No records found — submit form first
-          </div>
-        ) : (
-          <table className="w-full min-w-[1200px] border-collapse">
+        <table className="w-full min-w-[1500px]">
 
-            <thead className="bg-gray-100 text-left">
-              <tr>
-                <th className="p-3 border">Dealer</th>
-                <th className="p-3 border">Contact</th>
-                <th className="p-3 border">Address</th>
-                <th className="p-3 border">CNIC</th>
-                <th className="p-3 border">NTN</th>
-                <th className="p-3 border">Area Code</th>
-                <th className="p-3 border">Driver</th>
-                <th className="p-3 border">Driver Contact</th>
-                <th className="p-3 border">Truck No</th>
-                <th className="p-3 border">Cement</th>
-                <th className="p-3 border">Amount</th>
-                <th className="p-3 border">Actions</th>
-              </tr>
-            </thead>
+          {/* GROUP HEADER */}
+          <thead>
 
-            <tbody>
-              {entries.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 text-sm">
+            <tr className="text-white text-sm">
 
-                  {/* Dealer */}
-                  <td className="p-2 border">
-                    {editingId === item.id ? (
-                      <input
-                        name="dealerName"
-                        value={editForm.dealerName}
-                        onChange={handleChange}
-                        className="border p-1 w-full"
-                      />
-                    ) : (
-                      item.dealerName
-                    )}
+              <th colSpan="6" className="bg-blue-700 p-4 text-left">
+                Dealer Information
+              </th>
+
+              <th colSpan="3" className="bg-green-700 p-4 text-left">
+                Transport Information
+              </th>
+
+              <th colSpan="1" className="bg-yellow-600 p-4 text-left">
+                Cement Data
+              </th>
+
+              <th colSpan="1" className="bg-purple-700 p-4 text-left">
+                Financial
+              </th>
+
+              <th colSpan="1" className="bg-gray-700 p-4 text-left">
+                Actions
+              </th>
+
+            </tr>
+
+            {/* COLUMN HEADER */}
+            <tr className="text-sm font-semibold">
+
+              {/* DEALER */}
+              <th className="p-3 bg-blue-100">Dealer</th>
+              <th className="p-3 bg-blue-100">Dealer Contact</th>
+              <th className="p-3 bg-blue-100">Address</th>
+              <th className="p-3 bg-blue-100">CNIC</th>
+              <th className="p-3 bg-blue-100">NTN</th>
+              <th className="p-3 bg-blue-100">Area</th>
+
+              {/* TRANSPORT */}
+              <th className="p-3 bg-green-100">Driver</th>
+              <th className="p-3 bg-green-100">Driver Contact</th>
+              <th className="p-3 bg-green-100">Truck No</th>
+
+              {/* CEMENT */}
+              <th className="p-3 bg-yellow-100">Cement (Weight)</th>
+
+              {/* FINANCIAL */}
+              <th className="p-3 bg-purple-100">Amount (RS)</th>
+
+              {/* ACTIONS */}
+              <th className="p-3 bg-gray-100">Actions</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {entries.length > 0 ? (
+
+              entries.map((item) => (
+
+                <tr
+                  key={item.id}
+                  className="border-b hover:bg-gray-50"
+                >
+
+                  {/* DEALER */}
+                  <td className="p-3 bg-blue-50">{render(item, "dealerName")}</td>
+                  <td className="p-3 bg-blue-50">{render(item, "contactNumber")}</td>
+                  <td className="p-3 bg-blue-50">{render(item, "address")}</td>
+                  <td className="p-3 bg-blue-50">{render(item, "cnicNo")}</td>
+                  <td className="p-3 bg-blue-50">{render(item, "ntnNo")}</td>
+                  <td className="p-3 bg-blue-50">{render(item, "areaCode")}</td>
+
+                  {/* TRANSPORT */}
+                  <td className="p-3 bg-green-50">{render(item, "driverName")}</td>
+                  <td className="p-3 bg-green-50">{render(item, "driverContact")}</td>
+                  <td className="p-3 bg-green-50 font-semibold text-green-700">
+                    {render(item, "truckNo")}
                   </td>
 
-                  {/* Contact */}
-                  <td className="p-2 border">
-                    {editingId === item.id ? (
-                      <input
-                        name="contactNumber"
-                        value={editForm.contactNumber}
-                        onChange={handleChange}
-                        className="border p-1 w-full"
-                      />
-                    ) : (
-                      item.contactNumber
-                    )}
+                  {/* CEMENT WEIGHT (HIGHLIGHTED) */}
+                  <td className="p-3 bg-yellow-50 font-bold text-yellow-700">
+                    {render(item, "cementAmount")}
                   </td>
 
-                  {/* Address */}
-                  <td className="p-2 border">{item.address}</td>
-
-                  {/* CNIC */}
-                  <td className="p-2 border">{item.cnicNo}</td>
-
-                  {/* NTN */}
-                  <td className="p-2 border">{item.ntnNo}</td>
-
-                  {/* Area Code */}
-                  <td className="p-2 border">{item.areaCode}</td>
-
-                  {/* Driver */}
-                  <td className="p-2 border">
-                    {editingId === item.id ? (
-                      <input
-                        name="driverName"
-                        value={editForm.driverName}
-                        onChange={handleChange}
-                        className="border p-1 w-full"
-                      />
-                    ) : (
-                      item.driverName
-                    )}
-                  </td>
-
-                  {/* Driver Contact */}
-                  <td className="p-2 border">
-                    {editingId === item.id ? (
-                      <input
-                        name="driverContact"
-                        value={editForm.driverContact}
-                        onChange={handleChange}
-                        className="border p-1 w-full"
-                      />
-                    ) : (
-                      item.driverContact
-                    )}
-                  </td>
-
-                  {/* Truck */}
-                  <td className="p-2 border">{item.truckNo}</td>
-
-                  {/* Cement */}
-                  <td className="p-2 border">
-                    {editingId === item.id ? (
-                      <input
-                        name="cementAmount"
-                        value={editForm.cementAmount}
-                        onChange={handleChange}
-                        className="border p-1 w-full"
-                      />
-                    ) : (
-                      item.cementAmount
-                    )}
-                  </td>
-
-                  {/* Amount */}
-                  <td className="p-2 border">
-                    {editingId === item.id ? (
-                      <input
-                        name="amount"
-                        value={editForm.amount}
-                        onChange={handleChange}
-                        className="border p-1 w-full"
-                      />
-                    ) : (
-                      item.amount
-                    )}
+                  {/* FINANCIAL */}
+                  <td className="p-3 bg-purple-50 font-bold text-purple-700">
+                    {render(item, "amount")}
                   </td>
 
                   {/* ACTIONS */}
-                  <td className="p-2 border space-x-2">
+                  <td className="p-3 bg-gray-50">
 
-                    {editingId === item.id ? (
-                      <>
+                    <div className="flex gap-2">
+
+                      {editingId === item.id ? (
                         <button
-                          onClick={handleSave}
-                          className="bg-green-600 text-white px-3 py-1 rounded"
+                          type="button"
+                          onClick={saveEdit}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg"
                         >
                           Save
                         </button>
-
+                      ) : (
                         <button
-                          onClick={() => setEditingId(null)}
-                          className="bg-gray-500 text-white px-3 py-1 rounded"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded"
+                          type="button"
+                          onClick={() => startEdit(item)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg"
                         >
                           Edit
                         </button>
+                      )}
 
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="bg-red-600 text-white px-3 py-1 rounded"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                      >
+                        Delete
+                      </button>
+
+                    </div>
 
                   </td>
 
                 </tr>
-              ))}
-            </tbody>
 
-          </table>
-        )}
+              ))
+
+            ) : (
+
+              <tr>
+                <td colSpan="12" className="text-center p-8 text-gray-500">
+                  No cement entries found
+                </td>
+              </tr>
+
+            )}
+
+          </tbody>
+
+        </table>
 
       </div>
+
     </div>
   );
 }
