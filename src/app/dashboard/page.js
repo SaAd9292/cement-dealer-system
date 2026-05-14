@@ -1,58 +1,76 @@
+"use client";
+
 import CementForm from "@/components/CementForm";
 import RecordsTable from "@/components/RecordsTable";
+import { useEffect, useState } from "react";
+import { getCementEntries } from "@/lib/cementStorage";
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    totalEntries: 0,
+    totalCement: 0,
+    totalAmount: 0,
+  });
+
+  useEffect(() => {
+    const data = getCementEntries();
+
+    const totalEntries = data.length;
+
+    const totalCement = data.reduce(
+      (sum, item) => sum + Number(item.cementAmount || 0),
+      0
+    );
+
+    const totalAmount = data.reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    );
+
+    setStats({ totalEntries, totalCement, totalAmount });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F5F7FB] p-8 space-y-8">
 
       {/* HEADER */}
       <div>
-        <h1 className="text-3xl font-bold text-[#0F172A]">
-          Operations Dashboard
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Manage cement entries, records, and dealer transactions
+        <h1 className="text-3xl font-bold">Operations Dashboard</h1>
+        <p className="text-gray-500">
+          Manage cement entries and dealer operations
         </p>
       </div>
 
-      {/* TOP KPI STRIP */}
+      {/* KPI */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-        <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-600">
-          <p className="text-gray-500 text-sm">Today Entries</p>
-          <h2 className="text-2xl font-bold text-[#0F172A]">18</h2>
+        <div className="bg-white p-5 rounded-xl shadow">
+          <p className="text-gray-500 text-sm">Total Entries</p>
+          <h2 className="text-2xl font-bold">{stats.totalEntries}</h2>
         </div>
 
-        <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-600">
+        <div className="bg-white p-5 rounded-xl shadow">
           <p className="text-gray-500 text-sm">Total Cement (Tons)</p>
-          <h2 className="text-2xl font-bold text-[#0F172A]">540</h2>
+          <h2 className="text-2xl font-bold">{stats.totalCement}</h2>
         </div>
 
-        <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-purple-600">
-          <p className="text-gray-500 text-sm">Active Dealers</p>
-          <h2 className="text-2xl font-bold text-[#0F172A]">12</h2>
+        <div className="bg-white p-5 rounded-xl shadow">
+          <p className="text-gray-500 text-sm">Total Revenue</p>
+          <h2 className="text-2xl font-bold">Rs {stats.totalAmount}</h2>
         </div>
 
       </div>
 
-      {/* MAIN GRID */}
+      {/* MAIN */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* FORM SECTION */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-[#0F172A] mb-4">
-            New Cement Entry
-          </h2>
-
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="font-semibold mb-4">New Entry</h2>
           <CementForm />
         </div>
 
-        {/* RECENT RECORDS */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-[#0F172A] mb-4">
-            Recent Records
-          </h2>
-
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="font-semibold mb-4">Recent Records</h2>
           <RecordsTable />
         </div>
 

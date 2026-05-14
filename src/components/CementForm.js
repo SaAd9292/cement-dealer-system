@@ -12,6 +12,9 @@ export default function CementForm() {
     areaCode: "",
     amount: "",
     cementAmount: "",
+    driverName: "",
+    truckNo: "",
+    driverContact: "",
   });
 
   const handleChange = (e) => {
@@ -20,12 +23,42 @@ export default function CementForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form Data:", form);
-    alert("Record Saved (check console)");
+
+    // create new record
+    const newRecord = {
+      ...form,
+      id: Date.now(),
+      date: new Date().toLocaleString(),
+    };
+
+    // IMPORTANT: SAME KEY USED IN ENTRIES PAGE
+    const existingRecords =
+      JSON.parse(localStorage.getItem("cementEntries")) || [];
+
+    const updatedRecords = [newRecord, ...existingRecords];
+
+    localStorage.setItem("cementEntries", JSON.stringify(updatedRecords));
+
+    alert("Cement Entry Saved Successfully!");
+
+    // reset form
+    setForm({
+      dealerName: "",
+      contactNumber: "",
+      address: "",
+      cnicNo: "",
+      ntnNo: "",
+      areaCode: "",
+      amount: "",
+      cementAmount: "",
+      driverName: "",
+      truckNo: "",
+      driverContact: "",
+    });
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <div className="w-full bg-white p-6 rounded-xl shadow-md">
       <h2 className="text-2xl font-bold mb-6">Cement Entry Form</h2>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
@@ -39,7 +72,7 @@ export default function CementForm() {
           className="border p-2 rounded"
         />
 
-        {/* Contact Number */}
+        {/* Contact */}
         <input
           name="contactNumber"
           placeholder="Contact Number"
@@ -87,8 +120,8 @@ export default function CementForm() {
         {/* Amount */}
         <input
           name="amount"
-          placeholder="Amount (Rs)"
           type="number"
+          placeholder="Amount (Rs)"
           value={form.amount}
           onChange={handleChange}
           className="border p-2 rounded"
@@ -97,19 +130,46 @@ export default function CementForm() {
         {/* Cement Amount */}
         <input
           name="cementAmount"
-          placeholder="Cement Amount (Ton)"
           type="number"
+          placeholder="Cement (Ton)"
           value={form.cementAmount}
           onChange={handleChange}
           className="border p-2 rounded"
         />
 
-        {/* Submit Button */}
+        {/* Driver Name */}
+        <input
+          name="driverName"
+          placeholder="Driver Name"
+          value={form.driverName}
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+
+        {/* Truck No */}
+        <input
+          name="truckNo"
+          placeholder="Truck No"
+          value={form.truckNo}
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+
+        {/* Driver Contact */}
+        <input
+          name="driverContact"
+          placeholder="Driver Contact"
+          value={form.driverContact}
+          onChange={handleChange}
+          className="border p-2 rounded"
+        />
+
+        {/* Submit */}
         <button
           type="submit"
           className="col-span-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
         >
-          Save Record
+          Save Cement Entry
         </button>
       </form>
     </div>

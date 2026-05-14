@@ -26,6 +26,16 @@ export default function Sidebar() {
         <Link className="p-2 rounded hover:bg-gray-800" href="/dealers">
           👷 Dealers
         </Link>
+        <Link className="p-2 rounded hover:bg-gray-800" href="/trucks">
+          🚛 Trucks
+        </Link>
+        
+        <Link className="p-2 rounded hover:bg-gray-800" href="/expenses">
+         💸 Expenses
+        </Link>
+        <Link href="/cement-entries" className="block py-2 px-3 hover:bg-gray-200 rounded">
+        Cement Entries
+        </Link>
 
       </nav>
     </div>
